@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import Utils.Request;
 import Utils.Response;
+import Utils.TokenGenerator;
 import Utils.Usuario;
 import db.AlunosDTO;
 
@@ -24,41 +25,62 @@ public class ClienteHandler extends Thread {
 
     @Override
     public void run() {
+        Usuario usuarioAutenticado = null;
+
         try {
             ObjectOutputStream saida = new ObjectOutputStream(cliente.getOutputStream());
             saida.writeObject(new String("Bem vindo ao servidor!!!\nDigite a matrícula e a senha"));
             saida.flush();
 
-            Usuario usuarioAutenticado = null;
-
             ObjectInputStream entrada = new ObjectInputStream(cliente.getInputStream());
 
             do {
+                Map<Object, Object> body = new HashMap<>();
+
                 Request request = (Request) entrada.readObject();
 
                 Optional<Usuario> usuario = loginValido(request);
 
                 if (usuario.isPresent()) {
                     usuarioAutenticado = usuario.get();
-                } else {
-                    Map<Object, Object> response = new HashMap<>();
-                    response.put("response", "Matrícula e/ou senha inválidos digite novamente");
+                    body.put("response", "Login realizado com sucesso!");
+                    body.put("token", TokenGenerator.generate());
 
-                    saida.writeObject(
-                        Response
-                            .builder()
-                            .body(response)
-                            .status(400)
-                            .build()
-                    );
+                    Response response = construirResponse(body, 200);
+                    saida.writeObject(response);
+                    saida.flush();
+                } else {
+                    body.put("response", "Matrícula e/ou senha inválidos digite novamente");
+                    
+                    Response response = construirResponse(body, 400);
+                    saida.writeObject(response);
                     saida.flush();
                 }
             } while (Objects.isNull(usuarioAutenticado));
 
+            System.out.println("Aluno: " + usuarioAutenticado.obterNomeCompleto() +  " autenticou no sistema\n");
+
+
+
+
+
+
             cliente.close();
         } catch (IOException|ClassNotFoundException exception) {
             System.out.println(exception.getMessage());
+        } finally {
+            if (Objects.nonNull(usuarioAutenticado)) {
+                System.out.println("Aluno: " + usuarioAutenticado.obterNomeCompleto() +  " saiu do sistema\n");
+            }
         }
+    }
+
+    private static Response construirResponse(Map<Object, Object> body, int statusCode) {
+        return Response
+            .builder()
+            .body(body)
+            .status(statusCode)
+            .build();
     }
 
     private static Optional<Usuario> loginValido(Request request) {

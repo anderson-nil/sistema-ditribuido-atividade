@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -7,6 +8,7 @@ import java.util.Scanner;
 
 import Utils.Request;
 import Utils.Response;
+import Utils.Request.Header;
 
 public class Cliente {
 
@@ -17,38 +19,33 @@ public class Cliente {
 			Socket cliente = new Socket("localhost", 8888);
 
             ObjectInputStream entrada = new ObjectInputStream(cliente.getInputStream());
-            String resposta = (String) entrada.readObject();
-
-            System.out.println("Servidor: " + resposta);
-
-			ObjectOutputStream saida = new ObjectOutputStream(cliente.getOutputStream());
+            ObjectOutputStream saida = new ObjectOutputStream(cliente.getOutputStream());
+            
+            Object resposta = entrada.readObject();
+            System.out.println("Servidor: " + (String) resposta);
 
             int statusAuth = 0;
+            int token = 0;
 
             do {
                 Map<Object, Object> requestBody = new HashMap<>();
+                obterInformacoesAutenticacaoUsuario(requestBody);
 
-                System.out.println("Matrícula: ");
-                String matricula = input.nextLine();
+                Request request = construirRequest(null, requestBody);
 
-                System.out.println("Senha: ");
-                String senha = input.nextLine();
-
-                requestBody.put("matricula", matricula);
-                requestBody.put("senha", senha);
-
-                saida.writeObject(
-                    Request
-                    .builder()
-                    .body(requestBody)
-                    .build());
-                saida.flush();
+                enviarMensagemServidor(saida, request);
 
                 Response response = (Response) entrada.readObject();
-                resposta = (String) response.getBody().get("response");
+                resposta = response.getBody().get("response");
                 statusAuth = response.getStatus();
 
-                System.out.println(resposta);
+                if (statusAuth == 200) {
+                    token = (int) response.getBody().get("token");
+                }
+
+                System.out.println("\n" + (String) resposta);
+                System.out.println("Status code: " + statusAuth);
+                System.out.println("Token: " + token);
             } while (statusAuth != 200);
 
 			cliente.close();
@@ -57,4 +54,28 @@ public class Cliente {
 			System.out.println("Erro: " + e.getMessage());
 		}
 	}
+
+    private static void obterInformacoesAutenticacaoUsuario(Map<Object, Object> requestBody) {
+        System.out.print("\nMatrícula: ");
+        String matricula = input.nextLine();
+
+        System.out.print("Senha: ");
+        String senha = input.nextLine();
+
+        requestBody.put("matricula", matricula);
+        requestBody.put("senha", senha);
+    }
+
+    private static Request construirRequest(Header header, Map<Object, Object> body) {
+        return Request
+            .builder()
+            .header(header)
+            .body(body)
+            .build();
+    }
+
+    private static void enviarMensagemServidor(ObjectOutputStream saida, Request request) throws IOException {
+        saida.writeObject(request);
+        saida.flush();
+    }
 }
