@@ -1,4 +1,4 @@
-package Utils;
+package com.distribuido.sistema.Utils;
 
 public class TokenGenerator {
 

@@ -1,4 +1,4 @@
-package exceptions;
+package com.distribuido.sistema.exceptions;
 
 public class UsuarioNaoEncontradoException extends RuntimeException {
 

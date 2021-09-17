@@ -1,4 +1,4 @@
-package handler;
+package com.distribuido.sistema.handler;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import Utils.Request;
-import Utils.Response;
-import Utils.TokenGenerator;
-import Utils.Usuario;
-import db.AlunosDTO;
+import com.distribuido.sistema.Utils.Request;
+import com.distribuido.sistema.Utils.Response;
+import com.distribuido.sistema.Utils.TokenGenerator;
+import com.distribuido.sistema.Utils.Usuario;
+import com.distribuido.sistema.db.AlunosDTO;
 
 public class ClienteHandler extends Thread {
     
@@ -76,11 +76,7 @@ public class ClienteHandler extends Thread {
     }
 
     private static Response construirResponse(Map<Object, Object> body, int statusCode) {
-        return Response
-            .builder()
-            .body(body)
-            .status(statusCode)
-            .build();
+        return new Response(body, statusCode);
     }
 
     private static Optional<Usuario> loginValido(Request request) {

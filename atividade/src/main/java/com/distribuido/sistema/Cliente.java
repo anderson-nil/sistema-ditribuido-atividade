@@ -1,3 +1,5 @@
+package com.distribuido.sistema;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -6,17 +8,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import Utils.Request;
-import Utils.Response;
-import Utils.Request.Header;
+import com.distribuido.sistema.Utils.Request;
+import com.distribuido.sistema.Utils.Response;
+import com.distribuido.sistema.Utils.Request.Header;
 
 public class Cliente {
 
     private static Scanner input = new Scanner(System.in);
 
     public static void main(String[] args) {
-		try {
-			Socket cliente = new Socket("localhost", 8888);
+        try {
+            Socket cliente = new Socket("localhost", 8888);
 
             ObjectInputStream entrada = new ObjectInputStream(cliente.getInputStream());
             ObjectOutputStream saida = new ObjectOutputStream(cliente.getOutputStream());
@@ -47,12 +49,11 @@ public class Cliente {
                 System.out.println("Status code: " + statusAuth);
                 System.out.println("Token: " + token);
             } while (statusAuth != 200);
-
-			cliente.close();
-			System.out.println("Conexão encerrada");
-		} catch (Exception e) {
-			System.out.println("Erro: " + e.getMessage());
-		}
+                cliente.close();
+                System.out.println("Conexão encerrada");
+            } catch (Exception e) {
+                System.out.println("Erro: " + e.getMessage());
+            }
 	}
 
     private static void obterInformacoesAutenticacaoUsuario(Map<Object, Object> requestBody) {
@@ -67,11 +68,7 @@ public class Cliente {
     }
 
     private static Request construirRequest(Header header, Map<Object, Object> body) {
-        return Request
-            .builder()
-            .header(header)
-            .body(body)
-            .build();
+        return new Request(header, body);
     }
 
     private static void enviarMensagemServidor(ObjectOutputStream saida, Request request) throws IOException {

@@ -1,16 +1,16 @@
-package db;
+package com.distribuido.sistema.db;
 
 import java.util.List;
 import java.util.Optional;
 
-import Utils.Usuario;
-import exceptions.UsuarioNaoEncontradoException;
+import com.distribuido.sistema.Utils.Usuario;
+import com.distribuido.sistema.exceptions.UsuarioNaoEncontradoException;
 
 public class AlunosDTO {
     
     private static List<Usuario> alunosMatriculados = List.of(
-			Usuario.builder().matricula("1234").senha("12345678").nome("Lucas").sobrenome("Severo").build(),
-			Usuario.builder().matricula("3451").senha("12335778a").nome("João").sobrenome("Silva").build());
+        new Usuario("1234", "12345678", "Lucas", "Severo"),
+        new Usuario("3451", "12335778a", "João", "Silva"));
 
     public static List<Usuario> obterAlunosMatriculados() {
         return alunosMatriculados;
