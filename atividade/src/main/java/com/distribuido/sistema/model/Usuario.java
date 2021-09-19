@@ -1,4 +1,4 @@
-package com.distribuido.sistema.Utils;
+package com.distribuido.sistema.model;
 
 public class Usuario {
 

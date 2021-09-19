@@ -3,8 +3,8 @@ package com.distribuido.sistema.db;
 import java.util.List;
 import java.util.Optional;
 
-import com.distribuido.sistema.Utils.Usuario;
 import com.distribuido.sistema.exceptions.UsuarioNaoEncontradoException;
+import com.distribuido.sistema.model.Usuario;
 
 public class AlunosDTO {
     

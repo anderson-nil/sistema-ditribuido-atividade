@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -12,8 +13,10 @@ import java.util.Optional;
 import com.distribuido.sistema.Utils.Request;
 import com.distribuido.sistema.Utils.Response;
 import com.distribuido.sistema.Utils.TokenGenerator;
-import com.distribuido.sistema.Utils.Usuario;
 import com.distribuido.sistema.db.AlunosDTO;
+import com.distribuido.sistema.db.QuestoesDTO;
+import com.distribuido.sistema.model.Questao;
+import com.distribuido.sistema.model.Usuario;
 
 public class ClienteHandler extends Thread {
     
@@ -34,6 +37,7 @@ public class ClienteHandler extends Thread {
 
             ObjectInputStream entrada = new ObjectInputStream(cliente.getInputStream());
 
+            // Autenticação
             do {
                 Map<Object, Object> body = new HashMap<>();
 
@@ -47,30 +51,61 @@ public class ClienteHandler extends Thread {
                     body.put("token", TokenGenerator.generate());
 
                     Response response = construirResponse(body, 200);
-                    saida.writeObject(response);
-                    saida.flush();
+                    enviarMensagemServidor(saida, response);
                 } else {
                     body.put("response", "Matrícula e/ou senha inválidos digite novamente");
                     
                     Response response = construirResponse(body, 400);
-                    saida.writeObject(response);
-                    saida.flush();
+                    enviarMensagemServidor(saida, response);
                 }
             } while (Objects.isNull(usuarioAutenticado));
 
             System.out.println("Aluno: " + usuarioAutenticado.obterNomeCompleto() +  " autenticou no sistema\n");
 
+            // Enviar as questões para o aluno
+            List<Questao> questoes = QuestoesDTO.obterQuestoes();
+            int quantidadeRespostasCertas = 0;
 
+            Map<Object, Object> body = new HashMap<>();
+            body.put("questionsQuantity", questoes.size());
+            Response response = construirResponse(body, 200);
+            enviarMensagemServidor(saida, response);
 
+            int questaoIndex = 0;
+            for(Questao questao: questoes) {
+                body = new HashMap<>();
+                body.put("response", questao);
+                    
+                System.out.println("\nEnviando questão " + (questaoIndex+1) + " para: " + usuarioAutenticado.obterNomeCompleto());
 
+                response = construirResponse(body, 200);
+                enviarMensagemServidor(saida, response);
+                
+                Request request = (Request) entrada.readObject();
+                int resposta = (int) request.getBody().get("alternativa");
 
+                System.out.println(usuarioAutenticado.obterNomeCompleto() + " respondeu a questão questão " + (questaoIndex+1));
+
+                if (resposta == questao.getRespostaCerta()) {
+                    quantidadeRespostasCertas++;
+                }
+                
+                questaoIndex++;
+            }
+
+            body = new HashMap<>();
+            String resultado = "\nO aluno: " + usuarioAutenticado.obterNomeCompleto() + " respondeu " + questoes.size() + " questões e acertou " + quantidadeRespostasCertas;
+            body.put("response", resultado);
+
+            response = construirResponse(body, 200);
+            enviarMensagemServidor(saida, response);
 
             cliente.close();
         } catch (IOException|ClassNotFoundException exception) {
             System.out.println(exception.getMessage());
         } finally {
             if (Objects.nonNull(usuarioAutenticado)) {
-                System.out.println("Aluno: " + usuarioAutenticado.obterNomeCompleto() +  " saiu do sistema\n");
+                System.out.println("\nAluno: " + usuarioAutenticado.obterNomeCompleto() +  " saiu do sistema\n");
             }
         }
     }
@@ -88,4 +123,9 @@ public class ClienteHandler extends Thread {
 			.filter(u -> u.getMatricula().equals(matricula) && u.getSenha().equals(senha))
 			.findAny();
 	}
+
+    private static void enviarMensagemServidor(ObjectOutputStream saida, Response response) throws IOException {
+        saida.writeObject(response);
+        saida.flush();
+    }
 }
