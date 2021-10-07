@@ -1,0 +1,13 @@
+com\distribuido\sistema\handler\ClienteHandler.class
+com\distribuido\sistema\db\AlunosDTO.class
+com\distribuido\sistema\Utils\Response.class
+com\distribuido\sistema\Servidor.class
+com\distribuido\sistema\Utils\Request$Header.class
+com\distribuido\sistema\db\QuestoesDTO.class
+com\distribuido\sistema\model\Usuario.class
+com\distribuido\sistema\App.class
+com\distribuido\sistema\model\Questao.class
+com\distribuido\sistema\exceptions\UsuarioNaoEncontradoException.class
+com\distribuido\sistema\Cliente.class
+com\distribuido\sistema\Utils\TokenGenerator.class
+com\distribuido\sistema\Utils\Request.class
