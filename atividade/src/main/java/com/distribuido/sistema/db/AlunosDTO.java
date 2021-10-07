@@ -10,6 +10,7 @@ public class AlunosDTO {
     
     private static List<Usuario> alunosMatriculados = List.of(
         new Usuario("1234", "12345678", "Lucas", "Severo"),
+        new Usuario("339", "!@34asd339", "Anderson", "Andrade"),
         new Usuario("3451", "12335778a", "João", "Silva"));
 
     public static List<Usuario> obterAlunosMatriculados() {
